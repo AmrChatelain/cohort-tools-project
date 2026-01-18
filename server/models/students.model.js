@@ -21,11 +21,15 @@ const studentSchema = new Schema({
   },
   program: { type: String, required: false },
   background: { type: String, default: "" },
-  image: { type: String, default: `https://i.imgur.com/r8bo8u7.png` },
-  cohort: { type: Schema.Types.ObjectId, required: false },
+  image: { type: String, default: "https://i.imgur.com/r8bo8u7.png" },
+  cohort: { 
+    type: Schema.Types.ObjectId, 
+    ref: "Cohort",
+    required: false 
+  },
   projects: { type: [Schema.Types.ObjectId], required: false },
 });
 
-const Student=mongoose.model('Student',studentSchema);
+const Student = mongoose.model("Student", studentSchema);
 
-module.exports =Student;
+module.exports = Student;

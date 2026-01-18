@@ -17,7 +17,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 // ROUTES
-// GET /docs - Return HTML documentation
 app.get("/docs", (req, res) => {
   res.sendFile(__dirname + "/views/docs.html");
 });
@@ -25,22 +24,32 @@ app.get("/docs", (req, res) => {
 // Import route files
 const cohortRoutes = require("./routes/cohort.routes");
 const studentRoutes = require("./routes/student.routes");
+const authRoutes = require("./routes/auth.routes");
+const userRoutes = require("./routes/user.routes");
 
 // Use route files
 app.use("/api/cohorts", cohortRoutes);
 app.use("/api/students", studentRoutes);
+app.use("/auth", authRoutes);           
+app.use("/api/users", userRoutes);     
+
+// 404 handler
+app.use((req, res, next) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
+// ERROR HANDLING MIDDLEWARE
+const errorHandler = require("./middleware/errorHandler");
+app.use(errorHandler);
 
 // CONNECT TO DATABASE AND START SERVER
 mongoose
   .connect("mongodb://localhost:27017/cohort-tools-api")
   .then((x) => {
-    console.log(
-      `Connected to Mongo! Database name: "${x.connections[0].name}"`
-    );
-
-    // START SERVER
+    console.log(`Connected to Mongo! Database name: "${x.connections[0].name}"`);
+    
     app.listen(PORT, () => {
-      console.log(`Server listening on http://localhost:${PORT}`);
+      console.log(`Server listening on http://localhost:5005`);
     });
   })
   .catch((err) => console.error("Error connecting to mongo", err));

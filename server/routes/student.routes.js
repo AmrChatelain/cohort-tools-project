@@ -3,54 +3,54 @@ const router = express.Router();
 const Student = require("../models/students.model");
 
 // POST /api/students - Creates a new student
-router.post("/", async (req, res) => {
+router.post("/", async (req, res, next) => {
   try {
     const newStudent = await Student.create(req.body);
     res.status(201).json(newStudent);
   } catch (error) {
-    res.status(400).json({ message: "Error creating student", error: error.message });
+    next(error); 
   }
 });
 
-// GET /api/students/cohort/:cohortId - Retrieves all students for a given cohort
-router.get("/cohort/:cohortId", async (req, res) => {
+// GET /api/students/cohort/:cohortId
+router.get("/cohort/:cohortId", async (req, res, next) => {
   try {
     const { cohortId } = req.params;
-    const cohortStudents = await Student.find({ cohort: cohortId });
+    const cohortStudents = await Student.find({ cohort: cohortId }).populate("cohort");
     res.json(cohortStudents);
   } catch (error) {
-    res.status(500).json({ message: "Error retrieving students", error: error.message });
+    next(error);  
   }
 });
 
-// GET /api/students/:studentId - Retrieves a specific student by id
-router.get("/:studentId", async (req, res) => {
+// GET /api/students/:studentId
+router.get("/:studentId", async (req, res, next) => {
   try {
     const { studentId } = req.params;
     const student = await Student.findById(studentId).populate("cohort");
     
-    if (student) {
-      res.json(student);
-    } else {
-      res.status(404).json({ message: "Student not found" });
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
     }
+    
+    res.json(student);
   } catch (error) {
-    res.status(500).json({ message: "Error retrieving student", error: error.message });
+    next(error); 
   }
 });
 
-// GET /api/students - Retrieves all students
-router.get("/", async (req, res) => {
+// GET /api/students
+router.get("/", async (req, res, next) => {
   try {
     const allStudents = await Student.find().populate("cohort");
     res.json(allStudents);
   } catch (error) {
-    res.status(500).json({ message: "Error retrieving students", error: error.message });
+    next(error);  
   }
 });
 
-// PUT /api/students/:studentId - Updates a specific student by id
-router.put("/:studentId", async (req, res) => {
+// PUT /api/students/:studentId
+router.put("/:studentId", async (req, res, next) => {
   try {
     const { studentId } = req.params;
     const updatedStudent = await Student.findByIdAndUpdate(
@@ -59,29 +59,29 @@ router.put("/:studentId", async (req, res) => {
       { new: true, runValidators: true }
     );
     
-    if (updatedStudent) {
-      res.json(updatedStudent);
-    } else {
-      res.status(404).json({ message: "Student not found" });
+    if (!updatedStudent) {
+      return res.status(404).json({ message: "Student not found" });
     }
+    
+    res.json(updatedStudent);
   } catch (error) {
-    res.status(400).json({ message: "Error updating student", error: error.message });
+    next(error); 
   }
 });
 
-// DELETE /api/students/:studentId - Deletes a specific student by id
-router.delete("/:studentId", async (req, res) => {
+// DELETE /api/students/:studentId
+router.delete("/:studentId", async (req, res, next) => {
   try {
     const { studentId } = req.params;
     const deletedStudent = await Student.findByIdAndDelete(studentId);
     
-    if (deletedStudent) {
-      res.json({ message: "Student deleted successfully" });
-    } else {
-      res.status(404).json({ message: "Student not found" });
+    if (!deletedStudent) {
+      return res.status(404).json({ message: "Student not found" });
     }
+    
+    res.json({ message: "Student deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Error deleting student", error: error.message });
+    next(error); 
   }
 });
 
